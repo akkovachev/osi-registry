@@ -1,0 +1,16 @@
+{
+  "name": "mcp-registry",
+  "version": "1.0.0",
+  "description": "Self-hosted MCP allowlist registry (v0.1 spec) for GitHub Copilot",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
