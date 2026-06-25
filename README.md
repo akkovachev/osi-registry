@@ -12,8 +12,28 @@ GitHub Copilot appends these paths to the base registry URL you configure:
 - `GET /v0.1/servers` — list all allowed servers
 - `GET /v0.1/servers/{serverName}/versions/latest` — latest version of a server
 - `GET /v0.1/servers/{serverName}/versions/{version}` — a specific version
+- `POST /v0.1/servers` — add a server (requires admin key)
+- `DELETE /v0.1/servers/{serverName}` — remove a server (requires admin key)
 
 All responses include the CORS headers GitHub requires.
+
+### Admin endpoints
+
+`POST`/`DELETE` require an `ADMIN_API_KEY` set in the environment (see
+[.env.example](.env.example)), sent as `Authorization: Bearer <key>`. If the
+key isn't configured, both endpoints return `503`.
+
+```sh
+# Add a server
+curl -X POST http://localhost:8080/v0.1/servers \
+  -H "Authorization: Bearer $ADMIN_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"server": {"name": "com.example/my-mcp-server", "description": "...", "version": "1.0.0", "remotes": [{"type": "streamable-http", "url": "https://example.com/mcp"}]}}'
+
+# Remove a server
+curl -X DELETE http://localhost:8080/v0.1/servers/com.example%2Fmy-mcp-server \
+  -H "Authorization: Bearer $ADMIN_API_KEY"
+```
 
 ## Run locally
 
@@ -26,6 +46,7 @@ npm start
 ## Run with Docker
 
 ```sh
+cp .env.example .env   # set ADMIN_API_KEY
 docker compose up --build
 # http://localhost:8080/v0.1/servers
 ```
@@ -54,8 +75,41 @@ In your **enterprise** or **organization** settings → **Copilot** → **MCP**:
 > `name` in [data/servers.json](data/servers.json) identical to the canonical
 > server ID (`com.atlassian/atlassian-mcp-server`).
 
+## Set up the MCP Registry Admin skill
+
+This repository includes a GitHub Copilot Chat skill at
+[.github/skills/mcp-registry-admin/SKILL.md](.github/skills/mcp-registry-admin/SKILL.md)
+that can add, list, and delete servers through this registry API.
+
+1. Make sure this folder exists in your workspace:
+   `.github/skills/mcp-registry-admin/SKILL.md`.
+2. Start the registry locally (or point to your deployed one):
+   - Local: `http://localhost:8080`
+   - Deployed: `https://your-domain`
+3. Set the admin key used by `POST`/`DELETE`:
+   - Put `ADMIN_API_KEY=<your-key>` in your `.env` file (or shell env).
+4. (Optional, recommended) Save skill defaults in Copilot memory so you
+   don't have to repeat them:
+   - `registry_base_url=http://localhost:8080`
+   - `registry_admin_bearer_token=<your-admin-key>`
+
+Example prompts that trigger this skill:
+
+- `what mcp servers do we have in the registry?`
+- `add microsoft learn mcp`
+- `delete markitdown`
+
+Notes:
+
+- Add operations in this skill research the official endpoint first and ask for
+  confirmation before writing.
+- Delete operations resolve casual names (for example `markitdown`) to the
+  exact registered `name` before removing.
+
 ## Add or update servers
 
-Edit [data/servers.json](data/servers.json). Each entry follows the v0.1
+Either call the [admin API](#admin-endpoints) above, or edit
+[data/servers.json](data/servers.json) directly. Each entry follows the v0.1
 `server.json` schema. Bump `version` and the `_meta` block when the upstream
-server changes. Restart the service to pick up changes.
+server changes. Restart the service to pick up manual file edits (the admin
+API writes to the same file and takes effect immediately, no restart needed).

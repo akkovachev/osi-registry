@@ -101,8 +101,16 @@ Verified locally: all three endpoints return correct v0.1 responses.
 
 ## Maintenance
 
-- To add/update a server: edit `data/servers.json` (keep `name` matching the
-  canonical ID), bump `version`, redeploy/restart.
+- To add/remove a server: call the authenticated `POST`/`DELETE
+  /v0.1/servers` endpoints (see [README.md](README.md#admin-endpoints)), or
+  edit `data/servers.json` directly (keep `name` matching the canonical ID),
+  bump `version`, redeploy/restart.
+- Set `ADMIN_API_KEY` in the deployment environment (`.env` for Docker
+  Compose) — without it the write endpoints are disabled (503). The
+  `docker-compose.yml` mounts `./data` as a volume so admin-API writes
+  survive container recreation; if you deploy this a different way, make
+  sure `data/servers.json` is on persistent storage rather than baked only
+  into the image.
 
 ## References
 

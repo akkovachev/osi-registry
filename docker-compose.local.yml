@@ -1,0 +1,12 @@
+services:
+  mcp-registry:
+    build: .
+    image: mcp-registry:latest
+    restart: unless-stopped
+    environment:
+      PORT: "8080"
+      ADMIN_API_KEY: ${ADMIN_API_KEY}
+    volumes:
+      - ./data:/app/data
+    ports:
+      - "8080:8080"
