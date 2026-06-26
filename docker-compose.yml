@@ -8,6 +8,8 @@ services:
     environment:
       PORT: "8080"
       ADMIN_API_KEY: ${ADMIN_API_KEY}
+    volumes:
+      - mcp-registry-data:/app/data
     networks:
       - default
     labels:
@@ -19,6 +21,9 @@ services:
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.rule=Host(`${PROJECT_HOST_NAME}`)"
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.tls=true"
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.tls.certresolver=le"
+
+volumes:
+  mcp-registry-data:
 
 networks:
   default:
